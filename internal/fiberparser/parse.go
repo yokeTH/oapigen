@@ -17,6 +17,7 @@ func Parse(root string) error {
 	fset := token.NewFileSet()
 	files := make(map[string]*ast.File)
 
+	// walk to every .go files and store to files as filename: *ast.File
 	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 		if err != nil || info.IsDir() || !strings.HasSuffix(path, ".go") {
 			return nil
@@ -33,7 +34,11 @@ func Parse(root string) error {
 		os.Exit(1)
 	}
 
+	// find all struct to be generate as open api component
 	structs := shared.CollectStruct(files)
+	for _, sd := range structs {
+		log.Debug().Str("name", sd.Name).Any("field", sd.Fields).Msg("Found Struct")
+	}
 
 	routes := findRoute(files, structs)
 	for _, route := range routes {
