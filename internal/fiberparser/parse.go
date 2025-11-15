@@ -37,7 +37,13 @@ func Parse(root string) error {
 
 	routes := findRoute(files, structs)
 	for _, route := range routes {
-		log.Info().Interface("route", route).Msg("got route")
+		log.Debug().
+			Str("body", route.BodyType).
+			Str("response", route.RespType).
+			Str("handler", route.Handler).
+			Str("path", route.Path).
+			Str("method", route.Method).
+			Msg("Found route")
 	}
 
 	return nil

@@ -15,7 +15,7 @@ func NewBookHandler(bookUseCase *bookUsecase) *bookHandler {
 
 // CreateBook handles POST /books
 func (h *bookHandler) CreateBook(ctx fiber.Ctx) error {
-	var req CreateBookRequest
+	req := CreateBookRequest{}
 
 	if err := ctx.Bind().Body(&req); err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(ErrorResponse{Error: "Invalid request"})

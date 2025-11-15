@@ -1,7 +1,6 @@
 package shared
 
 import (
-	"fmt"
 	"go/ast"
 )
 
@@ -35,6 +34,6 @@ func ExprToString(e ast.Expr) string {
 	case *ast.IndexExpr:
 		return ExprToString(x.X) + "[" + ExprToString(x.Index) + "]"
 	default:
-		return fmt.Sprintf("%T", e)
+		return ""
 	}
 }

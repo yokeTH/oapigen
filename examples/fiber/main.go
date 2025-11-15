@@ -9,9 +9,9 @@ import (
 func main() {
 	app := fiber.New()
 
-	app.Get("healthz", func(ctx fiber.Ctx) error {
-		return ctx.SendString("OK")
-	})
+	// app.Get("healthz", func(ctx fiber.Ctx) error {
+	// 	return ctx.SendString("OK")
+	// })
 	// Book routes
 	bookDB := book.NewBookDB()
 	bookRepo := book.NewBookRepository(bookDB)
