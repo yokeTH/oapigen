@@ -65,7 +65,11 @@ func findRoute(files map[string]*ast.File, structs map[string]shared.StructDef) 
 			bodyType := ""
 			respType := ""
 			switch h := last.(type) {
+			case *ast.Ident:
+				// function declaretion func Handler(ctx fiber.Ctx) error
+				panic("unimplement")
 			case *ast.SelectorExpr:
+				// reciver method (e.g. bookHandler.CreateBook)
 				var receiver string
 				if ident, ok := h.X.(*ast.Ident); ok {
 					receiver = ident.Name
@@ -75,20 +79,18 @@ func findRoute(files map[string]*ast.File, structs map[string]shared.StructDef) 
 				handlerName = receiver + "." + h.Sel.Name
 				// method declarations might be stored with receiver prefixed by "*"
 				if fd, ok := funcDecls["*"+handlerName]; ok {
-					bt, rt := inspectHandlerBody(fd, structs)
+					bt, rt := inspectReceiver(fd)
 					bodyType = bt
 					respType = rt
 				} else if fd, ok := funcDecls[handlerName]; ok {
-					bt, rt := inspectHandlerBody(fd, structs)
+					bt, rt := inspectReceiver(fd)
 					bodyType = bt
 					respType = rt
 				}
 
 			case *ast.FuncLit:
-				handlerName = "anonymous"
-				bt, rt := inspectFuncLit(h, structs)
-				bodyType = bt
-				respType = rt
+				// anonymous function (e.g. app.Get("/path", func (c fiber.Ctx) err {}))
+				panic("unimplemented")
 			}
 			params := shared.ExtractColonPathParam(path)
 
@@ -105,51 +107,4 @@ func findRoute(files map[string]*ast.File, structs map[string]shared.StructDef) 
 	}
 
 	return route
-}
-
-func inspectFuncLit(h *ast.FuncLit, structs map[string]shared.StructDef) (string, string) {
-	panic("unimplemented")
-}
-
-func inspectHandlerBody(fd *ast.FuncDecl, structs map[string]shared.StructDef) (string, string) {
-	log.Debug().Str("func", fd.Name.Name).Msg("Processing")
-	var bt, rt string
-
-	ast.Inspect(fd.Body, func(n ast.Node) bool {
-		call, ok := n.(*ast.CallExpr)
-		if !ok {
-			return true
-		}
-
-		sel, ok := call.Fun.(*ast.SelectorExpr)
-		if !ok {
-			return true
-		}
-
-		name := sel.Sel.Name
-
-		switch name {
-		case "JSON", "Body", "All":
-			if recvCall, ok := sel.X.(*ast.CallExpr); ok {
-				if recvSel, ok := recvCall.Fun.(*ast.SelectorExpr); ok {
-					recvName := recvSel.Sel.Name
-
-					if recvName == "Bind" && len(call.Args) > 0 { // Ctx.Bind().XXX(XXX)
-						bt = shared.ResolveArgType(call.Args[0], fd)
-
-					} else if recvName == "Status" && len(call.Args) > 0 { // Ctx.Status().JSON(XXX)
-						rt = shared.ResolveArgType(call.Args[0], fd)
-					}
-				}
-			} else {
-				// ctx.JSON(...)
-				if len(call.Args) > 0 {
-					rt = shared.ResolveArgType(call.Args[0], fd)
-				}
-			}
-		}
-		return true
-
-	})
-	return bt, rt
 }
