@@ -74,7 +74,7 @@ func findRoute(files map[string]*ast.File, structs map[string]shared.StructDef) 
 				if ident, ok := h.X.(*ast.Ident); ok {
 					receiver = ident.Name
 				} else {
-					receiver = shared.ExtractTypeName(h.X)
+					receiver = shared.ExprToString(h.X)
 				}
 				handlerName = receiver + "." + h.Sel.Name
 				// method declarations might be stored with receiver prefixed by "*"
