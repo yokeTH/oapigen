@@ -16,7 +16,7 @@ func main() {
 		Name:  "oapigen",
 		Usage: "scan a Fiber v3 project and emit routes + structs as JSON",
 		Flags: []cli.Flag{
-			&cli.Int8Flag{Name: "log-level", Aliases: []string{"l"}, Value: 1, Usage: "set zerolog global log level (Panic=5, Fatal=4, Error=3, Warn=2, Info=1, Debug=0, Trace=-1)"},
+			&cli.BoolFlag{Name: "debug", Aliases: []string{"d"}, Value: false, Usage: "Log the debug level"},
 			&cli.StringFlag{Name: "path", Aliases: []string{"p"}, Value: ".", Usage: "project root to scan"},
 		},
 		Before: func(ctx context.Context, cmd *cli.Command) (context.Context, error) {
@@ -24,9 +24,13 @@ func main() {
 				Out:        os.Stdout,
 				TimeFormat: time.RFC3339,
 			}
-			logLv := cmd.Int8("log-level")
+			debug := cmd.Bool("debug")
 			log.Logger = log.Output(console).With().Timestamp().Logger()
-			zerolog.SetGlobalLevel(zerolog.Level(logLv))
+			if debug {
+				zerolog.SetGlobalLevel(zerolog.DebugLevel)
+			} else {
+				zerolog.SetGlobalLevel(zerolog.InfoLevel)
+			}
 			return ctx, nil
 		},
 		Action: func(ctx context.Context, cmd *cli.Command) error {
