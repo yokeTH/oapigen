@@ -1,4 +1,4 @@
-package parser
+package fiberparser
 
 import (
 	"fmt"
@@ -8,9 +8,12 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/rs/zerolog/log"
+	"github.com/yokeTH/oapigen/internal/shared"
 )
 
-func Parser(root string) error {
+func Parse(root string) error {
 	fset := token.NewFileSet()
 	files := make(map[string]*ast.File)
 
@@ -30,13 +33,12 @@ func Parser(root string) error {
 		os.Exit(1)
 	}
 
-	appNames := FindFiberAppNames(files)
-	structs := collectStructs(files)
-	routes := findRoutes(files, appNames, structs)
+	structs := shared.CollectStruct(files)
 
-	fmt.Printf("appNames: %v\n", appNames)
-	fmt.Printf("structs: %v\n", structs)
-	fmt.Printf("routes: %v\n", routes)
+	routes := findRoute(files, structs)
+	for _, route := range routes {
+		log.Info().Interface("route", route).Msg("got route")
+	}
 
 	return nil
 }
