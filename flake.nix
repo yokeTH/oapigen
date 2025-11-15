@@ -54,6 +54,7 @@
             go
             gopls
             golangci-lint
+            gotools
             pre-commit
           ];
 
